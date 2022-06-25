@@ -32,7 +32,6 @@ func Start(host string, port int) {
 	router.HandleFunc("/bad", handleBad).Methods(http.MethodGet)
 	router.HandleFunc("/data", handleData).Methods(http.MethodPost)
 	router.HandleFunc("/header", handleHeader).Methods(http.MethodGet)
-	router.HandleFunc("/", handleStatus)
 }
 
 func handleName(w http.ResponseWriter, r *http.Request) {
@@ -43,19 +42,21 @@ func handleName(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprintf(w, "Empty body")
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func handleBad(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusInternalServerError)
 }
 
 func handleData(w http.ResponseWriter, r *http.Request) {
 	d, _ := io.ReadAll(r.Body)
 	if len(d) != 0 {
-		fmt.Fprintf(w, "I got message:\n%s", d)
+		fmt.Fprintf(w, "I got message:\n%s", string(d))
 	} else {
 		fmt.Fprintf(w, "No body set")
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func handleHeader(w http.ResponseWriter, r *http.Request) {
@@ -72,10 +73,7 @@ func handleHeader(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprintf(w, "No headers set")
 	}
-}
-
-func handleStatus(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusInternalServerError)
+	w.WriteHeader(http.StatusOK)
 }
 
 //main /** starts program, gets HOST:PORT param and calls Start func.
