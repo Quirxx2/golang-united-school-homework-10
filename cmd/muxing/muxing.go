@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -25,6 +27,55 @@ func Start(host string, port int) {
 	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), router); err != nil {
 		log.Fatal(err)
 	}
+
+	router.HandleFunc("/name/{PARAM}", handleName).Methods(http.MethodGet)
+	router.HandleFunc("/bad", handleBad).Methods(http.MethodGet)
+	router.HandleFunc("/data", handleData).Methods(http.MethodPost)
+	router.HandleFunc("/header", handleHeader).Methods(http.MethodGet)
+	router.HandleFunc("/", handleStatus)
+}
+
+func handleName(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	param := vars["PARAM"]
+	if param != "" {
+		fmt.Fprintf(w, "Hello, %s!", param)
+	} else {
+		fmt.Fprintf(w, "Empty body")
+	}
+}
+
+func handleBad(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func handleData(w http.ResponseWriter, r *http.Request) {
+	d, _ := io.ReadAll(r.Body)
+	if len(d) != 0 {
+		fmt.Fprintf(w, "I got message:\n%s", d)
+	} else {
+		fmt.Fprintf(w, "No body set")
+	}
+}
+
+func handleHeader(w http.ResponseWriter, r *http.Request) {
+	if len(r.Header) != 0 {
+		keys := ""
+		values := 0
+		for k, v := range r.Header {
+			keys = keys + k + "+"
+			tmpval, _ := strconv.Atoi(strings.Join(v, ""))
+			values = values + tmpval
+		}
+		keys = keys[:len(keys)-1]
+		fmt.Fprintf(w, "%s: %s", keys, strconv.Itoa(values))
+	} else {
+		fmt.Fprintf(w, "No headers set")
+	}
+}
+
+func handleStatus(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
 }
 
 //main /** starts program, gets HOST:PORT param and calls Start func.
