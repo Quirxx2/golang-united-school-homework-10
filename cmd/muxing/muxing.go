@@ -60,16 +60,11 @@ func handleData(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleHeader(w http.ResponseWriter, r *http.Request) {
-	if len(r.Header) != 0 {
-		keys := ""
-		values := 0
-		for k, v := range r.Header {
-			keys = keys + k + "+"
-			tmpval, _ := strconv.Atoi(strings.Join(v, ""))
-			values = values + tmpval
-		}
-		keys = keys[:len(keys)-1]
-		w.Header().Set(keys, strconv.Itoa(values))
+	h := r.Header
+	val1, err1 := strconv.Atoi(strings.Join(h["A"], ""))
+	val2, err2 := strconv.Atoi(strings.Join(h["B"], ""))
+	if err1 == nil && err2 == nil {
+		w.Header().Set("a+b", strconv.Itoa(val1+val2))
 	} else {
 		fmt.Fprintf(w, "No headers set")
 	}
