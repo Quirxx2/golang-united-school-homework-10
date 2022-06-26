@@ -69,7 +69,7 @@ func handleHeader(w http.ResponseWriter, r *http.Request) {
 			values = values + tmpval
 		}
 		keys = keys[:len(keys)-1]
-		fmt.Fprintf(w, "%s: %s", keys, strconv.Itoa(values))
+		w.Header().Set(keys, strconv.Itoa(values))
 	} else {
 		fmt.Fprintf(w, "No headers set")
 	}
